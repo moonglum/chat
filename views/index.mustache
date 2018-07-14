@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <title>SSE Events with Node.js and Redis Streams</title>
+  </head>
+  <body>
+    <h1>Pub/Sub Updates</h1>
+
+    <ul is="sse-viewer" target="/update-stream">
+    </ul>
+
+    <form is="ajax-form" action="/messages" method="post">
+      <label for="message">Message</label>
+      <input id="message" name="message" type="text">
+      <input type="submit" value="Send Message">
+    </form>
+
+    <script type="text/javascript" src="/app.js"></script>
+</html>
