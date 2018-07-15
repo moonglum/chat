@@ -4,6 +4,7 @@ let express = require('express')
 let app = express()
 let bodyParser = require('body-parser')
 let cons = require('consolidate')
+let faker = require('faker')
 
 let Redis = require('ioredis')
 Redis.Command.setArgumentTransformer('xadd', xaddArgumentTransformer)
@@ -21,6 +22,7 @@ let producer = new Redis('redis://redis:6379')
 app.get('/', async function (req, res) {
   // TODO: Argument transformer and result parser
   // This is a weird way of getting the last 10 messages
+  let user = faker.name.findName()
   let messages = await producer.xrevrange('messages', '+', '-', 'COUNT', 10)
   messages = messages.reverse()
 
@@ -32,15 +34,15 @@ app.get('/', async function (req, res) {
   // Get it into a shape that is compatible with mustache
   messages = messages.map(message => arrayToObject(message[1]))
 
-  res.render('index', { messages, lastId })
+  res.render('index', { messages, lastId, user })
 })
 
 app.post('/messages', function (req, res) {
-  let { message } = req.body
+  let { message, user } = req.body
   producer.xadd('messages', {
     id: '*', // The * means: Determine the ID yourself
     text: message,
-    user: 'Unknown User'
+    user: user
   })
   res.redirect('/')
 })

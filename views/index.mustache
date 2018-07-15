@@ -17,6 +17,7 @@
 
     <form is="ajax-form" action="/messages" method="post">
       <label for="message">Message</label>
+      <input id="user" name="user" type="hidden" value="{{ user }}">
       <input id="message" name="message" type="text">
       <input type="submit" value="Send Message">
     </form>
