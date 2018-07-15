@@ -15,7 +15,8 @@
     "consolidate": "^0.15.1",
     "express": "^4.16.3",
     "ioredis": "^3.2.2",
-    "mustache": "^2.3.0"
+    "mustache": "^2.3.0",
+    "faker": "^4.1.0"
   },
   "devDependencies": {
     "eslint": "^5.1.0",
