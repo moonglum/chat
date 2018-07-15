@@ -8,8 +8,8 @@ Goals:
 
 ## Setup
 
-* `docker run --name chat -p 127.0.0.1:6379:6379/tcp --rm redis:5.0-rc3`
-* `npm i`
-* `npm start`
+```
+docker-compose up
+```
 
-TODO: Docker Compose Setup
+Go to "http://localhost:8000" in a browser in Chrome (won't work in Firefox stable).
