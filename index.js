@@ -24,7 +24,10 @@ app.get('/', async function (req, res) {
   let messages = await producer.xrevrange('messages', '+', '-', 'COUNT', 10)
   messages = messages.reverse()
 
-  let lastId = messages[messages.length - 1][0]
+  let lastId = '$'
+  if (messages.length > 0) {
+    lastId = messages[messages.length - 1][0]
+  }
 
   // Get it into a shape that is compatible with mustache
   messages = messages.map(message => arrayToObject(message[1]))
@@ -58,7 +61,6 @@ app.get('/update-stream', async function (req, res) {
     consumer.disconnect()
   })
 
-  console.log(req.query.start)
   let lastId = req.query.start || '$'
   while (true) {
     // TODO: Build an argument parser for xread?
