@@ -15,7 +15,7 @@ app.set('view engine', 'mustache')
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.resolve('public')))
 
-let producer = new Redis()
+let producer = new Redis('redis://redis:6379')
 
 // 10 is an arbitrary number
 app.get('/', async function (req, res) {
@@ -47,7 +47,7 @@ app.post('/messages', function (req, res) {
 
 // This parameter is written into the template by Node
 app.get('/update-stream', async function (req, res) {
-  let consumer = new Redis()
+  let consumer = new Redis('redis://redis:6379')
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',

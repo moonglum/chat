@@ -5,7 +5,7 @@ foo()
 Redis.Command.setReplyTransformer('xread', xreadResultParser)
 
 async function foo () {
-  let subscriber = new Redis()
+  let subscriber = new Redis('redis://redis:6379')
 
   let lastId = '$'
   while (true) {
