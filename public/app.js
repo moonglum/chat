@@ -38,6 +38,8 @@ class AJAXForm extends HTMLFormElement {
       },
       body: serializeForm(this)
     })
+
+    this.reset()
   }
 
   get method () {
