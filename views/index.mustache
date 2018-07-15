@@ -6,7 +6,13 @@
   <body>
     <h1>Pub/Sub Updates</h1>
 
-    <ul is="sse-viewer" target="/update-stream">
+    <ul is="sse-viewer" target="/update-stream?start={{ lastId }}">
+      {{# messages }}
+      <li>
+        <strong>{{ user }}:</strong>
+        {{ text }}
+      </li>
+      {{/ messages }}
     </ul>
 
     <form is="ajax-form" action="/messages" method="post">
