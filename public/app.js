@@ -3,12 +3,12 @@
 // Streams the output of an SSE source into an unsorted list
 class SSEViewer extends HTMLUListElement {
   connectedCallback () {
-    let source = new EventSource(this.target)
+    const source = new EventSource(this.target)
     source.addEventListener('message', this.onMessage.bind(this), false)
   }
 
   onMessage (ev) {
-    let li = document.createElement('li')
+    const li = document.createElement('li')
     li.innerHTML = ev.data
     this.appendChild(li)
   }
@@ -43,7 +43,7 @@ class AJAXForm extends HTMLFormElement {
   }
 
   get method () {
-    let method = this.getAttribute('method')
+    const method = this.getAttribute('method')
     return method ? method.toUpperCase() : 'GET'
   }
 
@@ -56,11 +56,11 @@ customElements.define('ajax-form', AJAXForm, { extends: 'form' })
 
 // Not sure why we need to serialize ourselves...
 function serializeForm (form) {
-  let data = new FormData(form)
-  let memo = []
-  for (let entry of data.entries()) {
-    let key = encodeURIComponent(entry[0])
-    let value = encodeURIComponent(entry[1])
+  const data = new FormData(form)
+  const memo = []
+  for (const entry of data.entries()) {
+    const key = encodeURIComponent(entry[0])
+    const value = encodeURIComponent(entry[1])
     memo.push(`${key}=${value}`)
   }
   return memo.join('&')

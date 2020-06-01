@@ -1,16 +1,16 @@
-let Redis = require('ioredis')
+const Redis = require('ioredis')
 
 foo()
 
 Redis.Command.setReplyTransformer('xread', xreadResultParser)
 
 async function foo () {
-  let subscriber = new Redis('redis://redis:6379')
+  const subscriber = new Redis('redis://redis:6379')
 
   let lastId = '$'
   while (true) {
     // The timeout is set to 0 to wait indefinitely
-    let { messages } = await subscriber.xread('block', 0, 'STREAMS', 'messages', lastId)
+    const { messages } = await subscriber.xread('block', 0, 'STREAMS', 'messages', lastId)
     messages.forEach(message => {
       lastId = message.id
       console.log(message)
@@ -19,12 +19,12 @@ async function foo () {
 }
 
 function xreadResultParser (results) {
-  let x = {}
+  const x = {}
   results.forEach(result => {
-    let y = []
+    const y = []
     result[1].forEach(message => {
-      let [id, foo] = message
-      let parsedMessage = arrayToObject(foo)
+      const [id, foo] = message
+      const parsedMessage = arrayToObject(foo)
       parsedMessage.id = id
       y.push(parsedMessage)
     })
@@ -34,10 +34,10 @@ function xreadResultParser (results) {
 }
 
 function arrayToObject (arr) {
-  let result = {}
+  const result = {}
   for (let i = 0; i < arr.length; i += 2) {
-    let key = arr[i]
-    let value = arr[i + 1]
+    const key = arr[i]
+    const value = arr[i + 1]
     result[key] = value
   }
   return result

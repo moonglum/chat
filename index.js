@@ -1,12 +1,12 @@
-let path = require('path')
+const path = require('path')
 
-let express = require('express')
-let app = express()
-let bodyParser = require('body-parser')
-let cons = require('consolidate')
-let faker = require('faker')
+const express = require('express')
+const app = express()
+const bodyParser = require('body-parser')
+const cons = require('consolidate')
+const faker = require('faker')
 
-let Redis = require('ioredis')
+const Redis = require('ioredis')
 Redis.Command.setArgumentTransformer('xadd', xaddArgumentTransformer)
 Redis.Command.setReplyTransformer('xread', xreadResultParser)
 
@@ -16,13 +16,13 @@ app.set('view engine', 'mustache')
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.resolve('public')))
 
-let producer = new Redis('redis://redis:6379')
+const producer = new Redis('redis://redis:6379')
 
 // 10 is an arbitrary number
 app.get('/', async function (req, res) {
   // TODO: Argument transformer and result parser
   // This is a weird way of getting the last 10 messages
-  let user = faker.name.findName()
+  const user = faker.name.findName()
   let messages = await producer.xrevrange('messages', '+', '-', 'COUNT', 10)
   messages = messages.reverse()
 
@@ -38,7 +38,7 @@ app.get('/', async function (req, res) {
 })
 
 app.post('/messages', function (req, res) {
-  let { message, user } = req.body
+  const { message, user } = req.body
   producer.xadd('messages', {
     id: '*', // The * means: Determine the ID yourself
     text: message,
@@ -49,12 +49,12 @@ app.post('/messages', function (req, res) {
 
 // This parameter is written into the template by Node
 app.get('/update-stream', async function (req, res) {
-  let consumer = new Redis('redis://redis:6379')
+  const consumer = new Redis('redis://redis:6379')
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
+    Connection: 'keep-alive'
   })
   res.write('\n')
 
@@ -68,7 +68,7 @@ app.get('/update-stream', async function (req, res) {
     // TODO: Build an argument parser for xread?
     // The timeout is set to 0 to wait indefinitely. This probably has to be set to something different
     // so we can handle disconnecting clients
-    let { messages } = await consumer.xread('block', 0, 'STREAMS', 'messages', lastId)
+    const { messages } = await consumer.xread('block', 0, 'STREAMS', 'messages', lastId)
     messages.forEach(message => {
       lastId = message.id
       res.write(`id: ${message.id}\n`)
@@ -83,12 +83,12 @@ console.log('App listening on 8000')
 
 // Clean up these methods
 function xreadResultParser (results) {
-  let x = {}
+  const x = {}
   results.forEach(result => {
-    let y = []
+    const y = []
     result[1].forEach(message => {
-      let [id, foo] = message
-      let parsedMessage = arrayToObject(foo)
+      const [id, foo] = message
+      const parsedMessage = arrayToObject(foo)
       parsedMessage.id = id
       y.push(parsedMessage)
     })
@@ -102,13 +102,13 @@ function xaddArgumentTransformer (args) {
     return args
   }
 
-  let result = []
+  const result = []
 
-  let [stream, kv] = args
+  const [stream, kv] = args
   result.push(stream)
   result.push(kv.id) // default to *?
   delete kv.id
-  for (let key in kv) {
+  for (const key in kv) {
     result.push(key)
     result.push(kv[key])
   }
@@ -117,10 +117,10 @@ function xaddArgumentTransformer (args) {
 }
 
 function arrayToObject (arr) {
-  let result = {}
+  const result = {}
   for (let i = 0; i < arr.length; i += 2) {
-    let key = arr[i]
-    let value = arr[i + 1]
+    const key = arr[i]
+    const value = arr[i + 1]
     result[key] = value
   }
   return result
