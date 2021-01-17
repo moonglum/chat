@@ -1,15 +1,16 @@
 version: "3"
 services:
-  redis:
-    image: "redis:6.0"
-    restart: always
   chat:
     build: .
     command: npm start
     volumes:
-      - .:/myapp
-      - /myapp/node_modules
+      - .:/app
+      - /app/node_modules
     ports:
       - "8000:8000"
     depends_on:
       - redis
+
+  redis:
+    image: "redis:6.0"
+    restart: always
