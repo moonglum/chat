@@ -21,7 +21,6 @@ class SSEViewer extends HTMLUListElement {
 customElements.define('sse-viewer', SSEViewer, { extends: 'ul' })
 
 // A form that submits in the background
-// TODO: Reset the form fields after submitting
 class AJAXForm extends HTMLFormElement {
   connectedCallback () {
     this.addEventListener('submit', this.onSubmit.bind(this))
@@ -31,12 +30,12 @@ class AJAXForm extends HTMLFormElement {
   onSubmit (ev) {
     ev.preventDefault()
 
+    const formData = new FormData(this)
+    const body = new URLSearchParams(formData)
+
     fetch(this.action, {
       method: this.method,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: serializeForm(this)
+      body: body
     })
 
     this.reset()
@@ -53,15 +52,3 @@ class AJAXForm extends HTMLFormElement {
 }
 
 customElements.define('ajax-form', AJAXForm, { extends: 'form' })
-
-// Not sure why we need to serialize ourselves...
-function serializeForm (form) {
-  const data = new FormData(form)
-  const memo = []
-  for (const entry of data.entries()) {
-    const key = encodeURIComponent(entry[0])
-    const value = encodeURIComponent(entry[1])
-    memo.push(`${key}=${value}`)
-  }
-  return memo.join('&')
-}
