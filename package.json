@@ -16,7 +16,7 @@
     "express": "^4.16.3",
     "ioredis": "^4.25.0",
     "mustache": "^4.2.0",
-    "faker": "^5.5.2"
+    "faker": "^5.5.3"
   },
   "devDependencies": {
     "eslint": "^7.23.0",
