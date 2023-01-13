@@ -6,11 +6,16 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+    environment:
+      PORT: 8000
+      REDIS_URL: redis://redis:6379
     ports:
       - "8000:8000"
     depends_on:
       - redis
 
   redis:
-    image: "redis:6.0"
+    image: "redis:7-bullseye"
+    ports:
+      - "6379:6379"
     restart: always

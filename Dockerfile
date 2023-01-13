@@ -1,4 +1,4 @@
-FROM node:14.15
+FROM node:18-bullseye
 
 # Environment:
 # * We will put the app in /app
@@ -10,7 +10,7 @@ RUN mkdir "$APP_HOME" && \
   npm install -g npm@latest
 
 # Copy package.json and lock
-COPY package*.json "$APP_HOME"
+COPY --chown=node:node package*.json "$APP_HOME"
 
 # Execute all commands in the app directory with the non-root user from now on
 WORKDIR $APP_HOME

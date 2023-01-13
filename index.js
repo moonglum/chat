@@ -4,11 +4,14 @@ const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const cons = require('consolidate')
-const faker = require('faker')
+const { faker } = require('@faker-js/faker')
 
 const Redis = require('ioredis')
 Redis.Command.setArgumentTransformer('xadd', xaddArgumentTransformer)
 Redis.Command.setReplyTransformer('xread', xreadResultParser)
+
+const port = process.env.PORT || '8000'
+const redisURL = process.env.REDIS_URL || 'redis://localhost:6379'
 
 app.set('views', path.resolve('views'))
 app.engine('mustache', cons.mustache)
@@ -16,13 +19,13 @@ app.set('view engine', 'mustache')
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.resolve('public')))
 
-const producer = new Redis('redis://redis:6379')
+const producer = new Redis(redisURL)
 
 // 10 is an arbitrary number
 app.get('/', async function (req, res) {
   // TODO: Argument transformer and result parser
   // This is a weird way of getting the last 10 messages
-  const user = faker.name.findName()
+  const user = faker.name.fullName()
   let messages = await producer.xrevrange('messages', '+', '-', 'COUNT', 10)
   messages = messages.reverse()
 
@@ -42,14 +45,14 @@ app.post('/messages', function (req, res) {
   producer.xadd('messages', {
     id: '*', // The * means: Determine the ID yourself
     text: message,
-    user: user
+    user
   })
   res.redirect('/')
 })
 
 // This parameter is written into the template by Node
 app.get('/update-stream', async function (req, res) {
-  const consumer = new Redis('redis://redis:6379')
+  const consumer = new Redis(redisURL)
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -78,8 +81,8 @@ app.get('/update-stream', async function (req, res) {
   }
 })
 
-app.listen(8000)
-console.log('App listening on 8000')
+app.listen(port)
+console.log(`App listening on ${port}`)
 
 // Clean up these methods
 function xreadResultParser (results) {

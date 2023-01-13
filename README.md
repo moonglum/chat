@@ -9,7 +9,7 @@ Goals:
 ## Setup
 
 ```
-docker-compose up
+docker compose up
 ```
 
-Go to "http://localhost:8000" in a browser in Chrome (won't work in Firefox stable).
+Go to <http://localhost:8000>

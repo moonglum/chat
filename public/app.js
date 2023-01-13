@@ -35,7 +35,7 @@ class AJAXForm extends HTMLFormElement {
 
     fetch(this.action, {
       method: this.method,
-      body: body
+      body
     })
 
     this.reset()
