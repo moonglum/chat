@@ -19,41 +19,49 @@ app.set('view engine', 'mustache')
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.resolve('public')))
 
-const producer = new Redis(redisURL)
+const redis = new Redis(redisURL)
 
-// 10 is an arbitrary number
 app.get('/', async function (req, res) {
-  // TODO: Argument transformer and result parser
-  // This is a weird way of getting the last 10 messages
   const user = faker.name.fullName()
-  let messages = await producer.xrevrange('messages', '+', '-', 'COUNT', 10)
-  messages = messages.reverse()
 
-  let lastId = '$'
-  if (messages.length > 0) {
-    lastId = messages[messages.length - 1][0]
+  try {
+    // TODO: Argument transformer and result parser
+    // This is a weird way of getting the last 10 messages
+    // also: 10 is an arbitrary number
+    let messages = await redis.xrevrange('messages', '+', '-', 'COUNT', 10)
+    messages = messages.reverse()
+
+    let lastId = '$'
+    if (messages.length > 0) {
+      lastId = messages[messages.length - 1][0]
+    }
+
+    // Get it into a shape that is compatible with mustache
+    messages = messages.map(message => arrayToObject(message[1]))
+
+    res.render('index', { messages, lastId, user })
+  } catch (err) {
+    console.error(err)
+    res.end('Error')
   }
-
-  // Get it into a shape that is compatible with mustache
-  messages = messages.map(message => arrayToObject(message[1]))
-
-  res.render('index', { messages, lastId, user })
 })
 
-app.post('/messages', function (req, res) {
+app.post('/messages', async function (req, res) {
   const { message, user } = req.body
-  producer.xadd('messages', {
-    id: '*', // The * means: Determine the ID yourself
-    text: message,
-    user
-  })
+  try {
+    await redis.xadd('messages', {
+      id: '*', // The * means: Determine the ID yourself
+      text: message,
+      user
+    })
+  } catch (err) {
+    console.error(err)
+  }
   res.redirect('/')
 })
 
 // This parameter is written into the template by Node
-app.get('/update-stream', async function (req, res) {
-  const consumer = new Redis(redisURL)
-
+app.get('/update-stream', function (req, res) {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
@@ -61,31 +69,36 @@ app.get('/update-stream', async function (req, res) {
   })
   res.write('\n')
 
-  // This doesn't help due to the infinite loop
-  res.on('close', () => {
-    consumer.disconnect()
-  })
-
   let lastId = req.query.start || '$'
-  while (true) {
-    // TODO: Build an argument parser for xread?
-    // The timeout is set to 0 to wait indefinitely. This probably has to be set to something different
-    // so we can handle disconnecting clients
-    const { messages } = await consumer.xread('block', 0, 'STREAMS', 'messages', lastId)
-    messages.forEach(message => {
-      lastId = message.id
-      res.write(`id: ${message.id}\n`)
-      // We will use the same partial here that we use to render the items on the server side
-      res.write(`data: <strong>${message.user}:</strong> ${message.text} \n\n`)
-    })
-  }
+  const intervalID = setInterval(async () => {
+    try {
+      const result = await redis.xread('STREAMS', 'messages', lastId)
+      if (result && result.messages) {
+        result.messages.forEach(message => {
+          lastId = message.id
+          res.write(`id: ${message.id}\n`)
+          // We will use the same partial here that we use to render the items on the server side
+          res.write(`data: <strong>${message.user}:</strong> ${message.text} \n\n`)
+        })
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }, 100)
+
+  res.on('close', () => {
+    clearInterval(intervalID)
+  })
 })
 
 app.listen(port)
 console.log(`App listening on ${port}`)
 
-// Clean up these methods
+// XXX Clean up these methods
 function xreadResultParser (results) {
+  if (!results) {
+    return null
+  }
   const x = {}
   results.forEach(result => {
     const y = []
